@@ -116,6 +116,46 @@ class KnowledgeBase(object):
             print("Invalid ask:", fact.statement)
             return []
 
+    def kb_retract_helper(self,fact_or_rule):
+        if fact_or_rule.asserted==True:
+            return
+        if len(fact_or_rule.supported_by)>0:
+            return
+
+        if isinstance(fact_or_rule,Fact):
+            for f in self.facts:
+                for x in f.supported_by:
+                    if x[0].statement == fact_or_rule.statement:
+                        f.supported_by.remove(x)
+                        self.kb_retract_helper(f)
+                            
+            for r in self.rules:
+                for x in r.supported_by:
+                    if x[0].statement == fact_or_rule.statement:
+                        r.supported_by.remove(x)
+                        self.kb_retract_helper(r)
+                       
+                if(self.facts.count(fact_or_rule)!=0):
+                    self.facts.remove(fact_or_rule)
+
+
+        if isinstance(fact_or_rule,Rule):
+
+            for f in self.facts:
+                for x in f.supported_by:
+                    if x[1].lhs == fact_or_rule.lhs and x[1].rhs == fact_or_rule.rhs:
+                       f.supported_by.remove(x)
+                       self.kb_retract_helper(f)
+                            
+                for r in self.rules:
+                    for x in r.supported_by:
+                        if x[1].lhs == fact_or_rule.lhs and x[1].rhs == fact_or_rule.rhs:
+                            r.supported_by.remove(x)
+                            self.kb_retract_helper(r)
+                            
+                if(self.facts.count(fact_or_rule)!=0):
+                    self.facts.remove(fact_or_rule)
+
     def kb_retract(self, fact_or_rule):
         """Retract a fact from the KB
 
@@ -128,6 +168,13 @@ class KnowledgeBase(object):
         printv("Retracting {!r}", 0, verbose, [fact_or_rule])
         ####################################################
         # Student code goes here
+        if isinstance(fact_or_rule,Fact):
+            fact_or_rule.asserted=False
+            self.kb_retract_helper(fact_or_rule)
+
+
+
+                
         
 
 class InferenceEngine(object):
@@ -146,3 +193,39 @@ class InferenceEngine(object):
             [fact.statement, rule.lhs, rule.rhs])
         ####################################################
         # Student code goes here
+        
+        matched=match(rule.lhs[0],fact.statement)
+        
+        if isinstance(matched,Bindings):
+            newrhs=instantiate(rule.rhs,matched)
+            newlhs=[]
+            
+            for s in rule.lhs:
+                if s==rule.lhs[0]:
+                    continue
+                statementnew=instantiate(s, matched)
+                newlhs.append(statementnew)
+                
+            if newlhs==[]:
+                newfact=Fact(newrhs,[[fact,rule]])
+                kb.kb_assert(newfact)
+                if newfact not in fact.supports_facts:
+                    fact.supports_facts.append(newfact)
+                if newfact not in rule.supports_facts:
+                    rule.supports_facts.append(newfact)
+                return
+
+            newrule=Rule([newlhs,newrhs],[[fact,rule]])
+            kb.kb_assert(newrule)
+            if newrule not in fact.supports_rules:
+                fact.supports_rules.append(newrule)
+            if newrule not in rule.supports_rules:
+                rule.supports_rules.append(newrule)
+            
+
+            
+        
+        
+        
+        
+        

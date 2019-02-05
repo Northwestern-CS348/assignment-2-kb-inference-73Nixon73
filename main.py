@@ -6,6 +6,7 @@ from student_code import KnowledgeBase
 class KBTest(unittest.TestCase):
 
     def setUp(self):
+
         # Assert starter facts
         file = 'statements_kb4.txt'
         self.data = read.read_tokenize(file)
@@ -16,6 +17,7 @@ class KBTest(unittest.TestCase):
                 self.KB.kb_assert(item)
         
     def test1(self):
+
         # Did the student code contain syntax errors, AttributeError, etc.
         ask1 = read.parse_input("fact: (motherof ada ?X)")
         print(' Asking if', ask1)
@@ -23,6 +25,7 @@ class KBTest(unittest.TestCase):
         self.assertEqual(str(answer[0]), "?X : bing")
 
     def test2(self):
+
         # Can fc_infer actually infer
         ask1 = read.parse_input("fact: (grandmotherof ada ?X)")
         print(' Asking if', ask1)
@@ -31,7 +34,7 @@ class KBTest(unittest.TestCase):
         self.assertEqual(str(answer[1]), "?X : chen")
 
     def test3(self):
-        # Does retract actually retract things 
+        # Does retract actually retract things
         r1 = read.parse_input("fact: (motherof ada bing)")
         print(' Retracting', r1)
         self.KB.kb_retract(r1)
@@ -48,11 +51,11 @@ class KBTest(unittest.TestCase):
         answer = self.KB.kb_ask(ask1)
         self.assertEqual(str(answer[0]), "?X : felix")
         self.assertEqual(str(answer[1]), "?X : chen")
-
+        breakpoint()
         r1 = read.parse_input("fact: (grandmotherof ada chen)")
         print(' Retracting', r1)
         self.KB.kb_retract(r1)
-
+        breakpoint()
         print(' Asking if', ask1)
         answer = self.KB.kb_ask(ask1)
         self.assertEqual(str(answer[0]), "?X : felix")
